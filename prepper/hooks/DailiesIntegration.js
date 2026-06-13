@@ -3,7 +3,9 @@ import { MODULE_ID, MODULE_TITLE } from "../constants.js";
 import { getSettings, settings, registerSettings } from "../utilities/Utilities.js";
 
 export function registerDailiesIntegration() {
-    const dailiesApi = game.dailies?.api;
+    // PF2e Dailies 4.x exposes its API on the module (game.modules.get(...).api).
+    // Older versions exposed a global game.dailies.api — keep it as a fallback.
+    const dailiesApi = game.modules.get("pf2e-dailies")?.api ?? game.dailies?.api;
     if (!dailiesApi?.registerCustomDailies) return;
 
     // Register visibility settings
