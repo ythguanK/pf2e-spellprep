@@ -14,16 +14,23 @@ Prepared casters (Wizard, Witch, Cleric, Druid, Magus, …) re-choose their spel
 - Optional **quick-load** (⚡) button on each prepared spellcasting entry.
 - Integrates with **PF2e Dailies**: pick a loadout to apply as part of your Daily Preparations.
 
-## Installation (manual / build-free)
-This module has **no build step** — Foundry loads the source directly.
+## Installation
+In Foundry VTT, open **Add-on Modules → Install Module**, and paste this **Manifest URL**:
 
-1. Copy or symlink this folder into your Foundry data directory as `…/Data/modules/pf2e-spellprep`.
-2. Launch Foundry, open your world, and enable **PF2e SpellPrep** in *Manage Modules*.
+```
+https://github.com/ythguanK/pf2e-spellprep/releases/latest/download/module.json
+```
 
-For development, a symlink is convenient — edit a file, reload Foundry (F5), done:
+Click **Install**, then enable **PF2e SpellPrep** in your world under *Manage Modules*. The Pathfinder Second Edition (`pf2e`) system is required.
+
+### For development (build-free)
+This module has **no build step** — Foundry loads the source files directly. Instead of installing the released version, symlink the repository into your Foundry data directory; edit a file and reload the world to see changes:
+
 ```bash
 ln -s /path/to/this/repo "/path/to/FoundryVTT/Data/modules/pf2e-spellprep"
 ```
+
+> Don't run both at once: the dev symlink and a manifest-installed copy share the id `pf2e-spellprep` and will collide.
 
 ## Usage
 1. Open a prepared spellcaster's character sheet → **Spellcasting** tab.
