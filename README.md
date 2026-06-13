@@ -49,7 +49,7 @@ If you use the [PF2e Dailies](https://foundryvtt.com/packages/pf2e-dailies) modu
 - Open **Daily Preparations**. For each prepared spellcasting entry that has at least one saved loadout, a **Change Spell Loadout** row appears with a dropdown of that entry's loadouts.
 - The default is **Keep current** (the row is not remembered between days). Pick a loadout and the chosen loadout is applied when you accept your daily preparations.
 
-> Requires the PF2e Dailies module to be installed and active, and at least one saved loadout on the entry. (Built against the PF2e Dailies 4.x API.)
+> Requires the PF2e Dailies module to be installed and active, and at least one saved loadout on the entry. (Verified with PF2e Dailies 4.18.1.)
 
 ## Notes
 - Loadouts are stored in actor *flags* under this module.
