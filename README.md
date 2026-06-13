@@ -38,6 +38,19 @@ ln -s /path/to/this/repo "/path/to/FoundryVTT/Data/modules/pf2e-spellprep"
 3. From **Current Preparation**, save the current spells as a new loadout.
 4. Later, select a saved loadout and **Load to Actor** to apply it.
 
+## PF2e Dailies integration
+If you use the [PF2e Dailies](https://foundryvtt.com/packages/pf2e-dailies) module, SpellPrep can apply a loadout as part of your **Daily Preparations**, so swapping spells becomes one step of your normal rest.
+
+**Enable it** (off by default):
+1. **Game Settings → Configure Settings → Module Settings → PF2e SpellPrep**.
+2. Tick **Enable PF2e Dailies Integration** and save (this is a world-level setting and reloads the world).
+
+**Use it:**
+- Open **Daily Preparations**. For each prepared spellcasting entry that has at least one saved loadout, a **Change Spell Loadout** row appears with a dropdown of that entry's loadouts.
+- The default is **Keep current** (the row is not remembered between days). Pick a loadout and the chosen loadout is applied when you accept your daily preparations.
+
+> Requires the PF2e Dailies module to be installed and active, and at least one saved loadout on the entry. (Verified against PF2e Dailies 4.x.)
+
 ## Notes
 - Loadouts are stored in actor *flags* under this module.
 - Loading a loadout replaces the current prepared slots (prepared casters) or signature spells (flexible casters) for that entry.
