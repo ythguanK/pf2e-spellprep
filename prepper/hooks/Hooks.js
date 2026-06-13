@@ -117,6 +117,10 @@ Hooks.once('ready', () => {
  * In unified view each spellcasting entry appears as a `.header-row` (one per
  * rank it has spells in) carrying `data-item-id` = the entry's id. We drop the
  * scroll button next to the entry name and wire it to that specific entry.
+ *
+ * NOTE: injecting on EVERY rank header (not just the first per entry) is
+ * intentional — some classes (e.g. Magus) only have spells in a few high ranks,
+ * so a per-rank button keeps the control next to wherever the spells actually are.
  * @param {HTMLElement} root  the sheet content element
  * @param {Actor} actor
  * @param {Set<string>} preparedEntryIds
