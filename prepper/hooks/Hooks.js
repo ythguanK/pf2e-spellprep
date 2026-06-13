@@ -60,6 +60,10 @@ function injectLoadoutButtons(app, html) {
             // Prefer the entry's control cluster; fall back to its header, then the row itself.
             const controls = row.querySelector('.item-controls') || row.querySelector('header') || row;
 
+            // Idempotency guard: never inject twice for the same entry, even if
+            // more than one render hook fires for a single sheet render.
+            if (controls.querySelector(`.pf2e-spellprep-spell-loadouts-manager[data-entry-id="${entry.id}"]`)) continue;
+
             const quickLoadHtml = showQuickLoad
                 ? `<a class="pf2e-spellprep-quick-load" data-entry-id="${entry.id}" data-entry-name="${entry.name}" data-tooltip="${game.i18n.localize('PREPPER.QuickLoad')}"><i class="fas fa-bolt"></i></a>`
                 : "";
@@ -108,9 +112,8 @@ Hooks.once('ready', () => {
 
 // Add the manager button to the character sheet's spellcasting tab.
 //
-// NOTE (v14): the correct render hook depends on whether the PF2e character
-// sheet uses ApplicationV2. `renderActorSheet` covers the legacy V1 case; the
-// PF2e-specific class hook covers the ApplicationV2 case. We register both and
-// the stale-button cleanup above keeps re-renders idempotent.
-Hooks.on('renderActorSheet', injectLoadoutButtons);
+// On Foundry v14 the PF2e character sheet is ApplicationV2 and fires
+// `renderCharacterSheetPF2e`. (The legacy `renderActorSheet` hook also fires as
+// a compatibility alias, which is why registering both injected the button
+// twice — so we register only the specific hook here.)
 Hooks.on('renderCharacterSheetPF2e', injectLoadoutButtons);
