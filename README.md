@@ -2,9 +2,13 @@
 
 Save, name, and instantly swap **prepared spell loadouts** for Pathfinder 2e prepared spellcasters in Foundry VTT.
 
-Prepared casters (Wizard, Witch, Cleric, Druid, Magus, …) re-choose their spells during Daily Preparations. Doing that by hand can take 20–30 minutes of real time and stalls the whole table. PF2e SpellPrep lets a player set up named loadouts once — **Combat**, **Social**, **Exploration**, whatever you like — and swap between them in a couple of clicks.
+Prepared casters (Wizard, Witch, Cleric, Druid, Magus, …) re-choose their spells during Daily Preparations. Doing that by hand can take 20–30 minutes of real time and stalls the whole table. PF2e SpellPrep lets a player set up named loadouts once: **Combat**, **Social**, **Exploration**, *whatever-you-like*; and swap between them in a couple of clicks.
+
+It also supports 
 
 > **Target:** Foundry VTT **v14**, Pathfinder Second Edition (`pf2e`) system **8.x**.
+> **Code is entirely AI-generated via Claude 4.8** Ignore references to "Fable 5.0" in the code, Claude has disassociative identity disorder as at 13th June 2026, probably due to Anthropic having to block 5.0 on the 12th because Anthropic won't bend the knee to Kegseth.
+>Testing [**was**]{.underline} performed by an actual human GM on both local and Forge-hosted copies of Foundry, but has been limited to classes present in my campaign.
 
 ## What it does
 - Saves a spellcasting entry's current preparation as a named **Loadout** (with an optional description).
@@ -24,8 +28,9 @@ https://github.com/ythguanK/pf2e-spellprep/releases/latest/download/module.json
 
 Click **Install**, then enable **PF2e SpellPrep** in your world under *Manage Modules*. The Pathfinder Second Edition (`pf2e`) system is required.
 
-### For development (build-free)
-This module has **no build step** — Foundry loads the source files directly. Instead of installing the released version, symlink the repository into your Foundry data directory; edit a file and reload the world to see changes:
+### For local development (build-free)
+This module has **no build step** Foundry can load the source files directly, which allos very fast iteration on a locally installed version.
+Instead of installing the released version, symlink the repository into your Foundry data directory; edit a file and reload the world to see changes:
 
 ```bash
 ln -s /path/to/this/repo "/path/to/FoundryVTT/Data/modules/pf2e-spellprep"
@@ -52,18 +57,20 @@ If you use the [PF2e Dailies](https://foundryvtt.com/packages/pf2e-dailies) modu
 
 > Requires the PF2e Dailies module to be installed and active, and at least one saved loadout on the entry. (Verified with PF2e Dailies 4.18.1.)
 
-## PF2e Unified Spellbook
-SpellPrep works alongside [PF2e Unified Spellbook](https://foundryvtt.com/packages/pf2e-unified-spellbook). In its **unified view**, the scroll button is added to each prepared spellcasting entry's sub-header (e.g. "Arcane Prepared Spells"). This is controlled by the **Unified Spellbook: Show Loadout Button** setting (on by default) — if a future Unified Spellbook update changes its layout, the button simply stops appearing (nothing else is affected), and you can disable it with that setting.
+## PF2e Unified Spellbook "integration"
+SpellPrep works alongside [PF2e Unified Spellbook](https://foundryvtt.com/packages/pf2e-unified-spellbook), but it's a hack as Unified Spellbook doesn't have a module API. 
+In its **Unified View**, the scroll (📜) button is added to each prepared spellcasting entry's sub-header (e.g. "Arcane Prepared Spells"). This is controlled by theSpellPrep setting **Unified Spellbook: Show Loadout Button** setting (on by default). If a future Unified Spellbook update changes its layout, it should fail safely and silently (the button simply stops appearing and nothing else is affected). Worst case you can turn it off.
 
 ## Notes
 - Loadouts are stored in actor *flags* under this module.
 - Loading a loadout replaces the current prepared slots (prepared casters) or signature spells (flexible casters) for that entry.
 - If a saved spell is no longer on the actor (or can't be placed), a warning lists the affected spells and why.
+- This is unlikely to be moved to the Bazaar as I'd have to purchase an anonymous Foundry licence.
 
 ### Coming from PF2e Prepper?
-PF2e SpellPrep is **data-compatible** with [PF2e Prepper](https://github.com/robinsving/pf2e-prepper). If an actor has loadouts saved by PF2e Prepper, they appear automatically in SpellPrep, and your first edit migrates them into SpellPrep's own storage — Prepper's data is left untouched.
+PF2e SpellPrep is **data-compatible** with [PF2e Prepper](https://github.com/robinsving/pf2e-prepper). If an actor has loadouts saved by PF2e Prepper, they appear automatically in SpellPrep, and your first edit migrates them into SpellPrep's own storage. Prepper's data is left untouched.
 
 ## Credits & license
-PF2e SpellPrep is a fork of **[PF2e Prepper](https://github.com/robinsving/pf2e-prepper)** by **Robin Sving**, brought to Foundry v14 and rebranded. Huge thanks to Robin for the original work.
+PF2e SpellPrep is a fork of **[PF2e Prepper](https://github.com/robinsving/pf2e-prepper)** by **Robin Sving**, brought to Foundry v14 and rebranded. Full credit to Robin's AI LLM for the original work :D
 
 Licensed under the **MIT License** (see [LICENSE](LICENSE)). Original copyright © 2025 Robin Sving; fork © 2026 ythguanK.
