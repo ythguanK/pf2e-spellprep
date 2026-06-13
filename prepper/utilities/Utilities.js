@@ -19,6 +19,14 @@ const settings = {
         scope: "client"
     },
 
+    unifiedSpellbook: {
+        id: "unifiedSpellbookButton",
+        name: "Unified Spellbook: Show Loadout Button",
+        hint: "When using PF2e Unified Spellbook, add the loadout button to each spellcasting entry header in the unified view. Turn this off if a Unified Spellbook update ever breaks it.",
+        scope: "client",
+        default: true
+    },
+
     flagNames: {
         loadouts: 'loadouts',
     }

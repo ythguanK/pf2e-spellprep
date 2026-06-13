@@ -51,6 +51,9 @@ If you use the [PF2e Dailies](https://foundryvtt.com/packages/pf2e-dailies) modu
 
 > Requires the PF2e Dailies module to be installed and active, and at least one saved loadout on the entry. (Verified with PF2e Dailies 4.18.1.)
 
+## PF2e Unified Spellbook
+SpellPrep works alongside [PF2e Unified Spellbook](https://foundryvtt.com/packages/pf2e-unified-spellbook). In its **unified view**, the scroll button is added to each prepared spellcasting entry's sub-header (e.g. "Arcane Prepared Spells"). This is controlled by the **Unified Spellbook: Show Loadout Button** setting (on by default) — if a future Unified Spellbook update changes its layout, the button simply stops appearing (nothing else is affected), and you can disable it with that setting.
+
 ## Notes
 - Loadouts are stored in actor *flags* under this module.
 - Loading a loadout replaces the current prepared slots (prepared casters) or signature spells (flexible casters) for that entry.
