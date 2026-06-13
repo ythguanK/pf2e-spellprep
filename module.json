@@ -2,14 +2,14 @@
     "id": "pf2e-spellprep",
     "title": "PF2e SpellPrep",
     "description": "Save, name, and instantly swap prepared spell loadouts (Combat, Social, Exploration, ...) for PF2e prepared spellcasters. A Foundry v14 fork of PF2e Prepper.",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "authors": [
         {
             "name": "ythguanK"
         },
         {
             "name": "Robin Sving",
-            "flags": { "note": "Original author of PF2e Prepper, which this module is forked from (MIT)." }
+            "url": "https://github.com/robinsving/pf2e-prepper"
         }
     ],
     "compatibility": {
@@ -37,14 +37,15 @@
                 "type": "system",
                 "compatibility": {
                     "minimum": "6.0.0",
-                    "verified": "8.1.2"
+                    "verified": "8.2.0"
                 }
             }
         ]
     },
     "url": "https://github.com/ythguanK/pf2e-spellprep",
     "manifest": "https://github.com/ythguanK/pf2e-spellprep/releases/latest/download/module.json",
-    "download": "https://github.com/ythguanK/pf2e-spellprep/releases/latest/download/pf2e-spellprep.zip",
+    "download": "https://github.com/ythguanK/pf2e-spellprep/releases/download/v0.3.1/pf2e-spellprep.zip",
+    "license": "LICENSE",
     "bugs": "https://github.com/ythguanK/pf2e-spellprep/issues",
     "readme": "https://raw.githubusercontent.com/ythguanK/pf2e-spellprep/main/README.md"
 }
