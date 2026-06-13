@@ -13,6 +13,7 @@ Prepared casters (Wizard, Witch, Cleric, Druid, Magus, …) re-choose their spel
 - Manage loadouts: create, duplicate, rename, set-to-current, delete, and clear-all.
 - Optional **quick-load** (⚡) button on each prepared spellcasting entry.
 - Integrates with **PF2e Dailies**: pick a loadout to apply as part of your Daily Preparations.
+- Works with **PF2e Unified Spellbook**: the loadout button appears in its unified view too.
 
 ## Installation
 In Foundry VTT, open **Add-on Modules → Install Module**, and paste this **Manifest URL**:
