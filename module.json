@@ -2,7 +2,7 @@
     "id": "pf2e-spellprep",
     "title": "PF2e SpellPrep",
     "description": "Save, name, and instantly swap prepared spell loadouts (Combat, Social, Exploration, ...) for PF2e prepared spellcasters. A Foundry v14 fork of PF2e Prepper.",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "authors": [
         {
             "name": "ythguanK"
