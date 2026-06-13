@@ -1,0 +1,7 @@
+.dailies .group .notify input[data-daily="module.pf2e-spellprep"][data-type="notify"] {
+  display: none;
+}
+
+.dailies .group .notify input[data-daily="module.pf2e-spellprep"][data-type="notify"] + span {
+  display: none;
+}

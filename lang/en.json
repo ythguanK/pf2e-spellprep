@@ -1,0 +1,52 @@
+{
+  "PREPPER": {
+    "ManageSpellLoadouts": "Manage Prepared Spell Loadouts with PF2e SpellPrep",
+    "QuickLoad": "Quick load a Loadout from PF2e SpellPrep",
+    "popup": {
+      "save": "Save",
+      "load": "Load to Actor",
+      "reset": "Reset",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "namePrompt": "Enter a name for this Loadout:",
+      "descriptionPrompt": "Enter a description (optional):",
+      "deleteConfirm": "Are you sure you want to delete this Loadout?",
+      "loadConfirm": "Loading this loadout will replace your currently prepared spells. Continue?",
+      "resetConfirm": "Resetting will replace your loadout with the current actor's prepared spells. Continue?"
+    },
+    "loadout": {
+      "saveSuccess": "Loadout saved successfully.",
+      "loadSuccess": "Loadout loaded successfully.",
+      "updateSuccess": "Loadout updated successfully.",
+      "deleteSuccess": "Loadout deleted successfully.",
+      "noSpellsAvailable": "No prepared spells found.",
+      "currentPreparation": "Current Preparation",
+      "availableLoadouts": "Available loadouts",
+      "spellRank": "Spell Rank",
+      "createdDate": "Created",
+      "unknownSpell": "Unknown Spell",
+      "loadWarning": {
+        "noLoadouts": "No saved loadouts for {name}.",
+        "entryNotFound": "Spellcasting entry not found for selected Actor.",
+        "missingSpellsHeading": "Some spells were not added:",
+        "reasonBadSpell": "spell error in saved loadout. Please remove the spell.",
+        "reasonNotOnActor": "spell no longer exists on this actor.",
+        "reasonNoSlot": "no available slot at spell rank."
+      }
+    },
+    "clearAllFlags": {
+      "success": "All saved loadouts were deleted for this actor.",
+      "confirm": "Delete ALL stored loadouts for this actor?<br>THIS CANNOT BE UNDONE."
+    },
+    "loadoutButton": {
+      "load": "Load to Actor",
+      "new": "Create new Loadout",
+      "delete": "Delete",
+      "rename": "Rename",
+      "duplicate": "Duplicate",
+      "reset": "Set to Current",
+      "reload": "Refresh",
+      "clearAll": "Clear All"
+    }
+  }
+}

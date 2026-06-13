@@ -1,0 +1,12 @@
+# Local study copy of the upstream module (reference only, not part of this project)
+_study-prepper/
+
+# OS cruft
+.DS_Store
+
+# Editor / tooling
+.vscode/
+*.log
+
+# Claude Code local session data
+.claude/
