@@ -4,11 +4,9 @@ Save, name, and instantly swap **prepared spell loadouts** for Pathfinder 2e pre
 
 Prepared casters (Wizard, Witch, Cleric, Druid, Magus, …) re-choose their spells during Daily Preparations. Doing that by hand can take 20–30 minutes of real time and stalls the whole table. PF2e SpellPrep lets a player set up named loadouts once: **Combat**, **Social**, **Exploration**, *whatever-you-like*; and swap between them in a couple of clicks.
 
-It also supports 
-
 > **Target:** Foundry VTT **v14**, Pathfinder Second Edition (`pf2e`) system **8.x**.
 > **Code is entirely AI-generated via Claude 4.8** Ignore references to "Fable 5.0" in the code, Claude has disassociative identity disorder as at 13th June 2026, probably due to Anthropic having to block 5.0 on the 12th because Anthropic won't bend the knee to Kegseth.
->Testing [**was**]{.underline} performed by an actual human GM on both local and Forge-hosted copies of Foundry, but has been limited to classes present in my campaign.
+>Testing <u>was</u> performed by an actual human GM on both local and Forge-hosted copies of Foundry, but has been limited to classes present in my campaign.
 
 ## What it does
 - Saves a spellcasting entry's current preparation as a named **Loadout** (with an optional description).
@@ -29,7 +27,7 @@ https://github.com/ythguanK/pf2e-spellprep/releases/latest/download/module.json
 Click **Install**, then enable **PF2e SpellPrep** in your world under *Manage Modules*. The Pathfinder Second Edition (`pf2e`) system is required.
 
 ### For local development (build-free)
-This module has **no build step** Foundry can load the source files directly, which allos very fast iteration on a locally installed version.
+This module has **no build step**, so Foundry loads the source files directly, which allows very fast iteration on a locally installed version.
 Instead of installing the released version, symlink the repository into your Foundry data directory; edit a file and reload the world to see changes:
 
 ```bash
