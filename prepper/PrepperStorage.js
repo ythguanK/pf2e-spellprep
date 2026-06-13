@@ -78,10 +78,16 @@ export default class PrepperStorage {
    * @private
    */
   static _getAllLoadouts(actor) {
+    // Our own flags are read via getFlag (our module is always active here).
+    // The legacy module's flags are read directly off the actor's stored data:
+    // getFlag() throws when its scope is not an *active* module, and the whole
+    // point of drop-in compatibility is to read PF2e Prepper's data after it
+    // has been disabled. Direct property access skips that scope validation.
+    const legacy = actor.flags?.[LEGACY_MODULE_ID];
     return actor.getFlag(MODULE_ID, settings.flagNames.loadouts)
       || actor.getFlag(MODULE_ID, "spellLists")
-      || actor.getFlag(LEGACY_MODULE_ID, settings.flagNames.loadouts)
-      || actor.getFlag(LEGACY_MODULE_ID, "spellLists")
+      || legacy?.[settings.flagNames.loadouts]
+      || legacy?.spellLists
       || {};
   }
 
