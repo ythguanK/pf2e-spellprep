@@ -55,6 +55,8 @@ From the manager's left rail, **Export** offers:
 
 **Import** reads a JSON file and detects automatically whether it holds loadouts or known spells. The client setting **Sort JSON Exports Alphabetically** (on by default) controls the export order.
 
+When a loadout is loaded, each spell is matched first by its stored id and then **by name** within the entry, so loadouts stay usable across worlds and characters (for example local and Forge-hosted copies), and survive a spell being deleted and re-added.
+
 ## PF2e Dailies integration
 If you use the [PF2e Dailies](https://foundryvtt.com/packages/pf2e-dailies) module, SpellPrep can apply a loadout as part of your **Daily Preparations**, so swapping spells becomes one step of your normal rest.
 
