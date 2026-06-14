@@ -2,6 +2,24 @@
   "PREPPER": {
     "ManageSpellLoadouts": "Manage Prepared Spell Loadouts with PF2e SpellPrep",
     "QuickLoad": "Quick load a Loadout from PF2e SpellPrep",
+    "io": {
+      "export": "Export",
+      "import": "Import",
+      "exportTitle": "Export",
+      "exportPrompt": "Choose an export format:",
+      "exportJsonLoadouts": "JSON: Loadouts",
+      "exportJsonKnown": "JSON: Known Spells",
+      "exportMdLoadouts": "Markdown: Loadouts",
+      "exportMdKnown": "Markdown: Known Spells",
+      "exportAll": "Export All",
+      "noLoadouts": "No saved loadouts to export.",
+      "noKnown": "No known spells found for this entry.",
+      "importSuccess": "Imported {count} loadout(s).",
+      "importSpellsSuccess": "Imported {added} spell(s); skipped {skipped} already present.",
+      "importEmpty": "No loadouts found in that file.",
+      "errorParse": "Could not read that file as JSON.",
+      "errorInvalid": "That file is not a PF2e SpellPrep export."
+    },
     "popup": {
       "save": "Save",
       "load": "Load to Actor",
@@ -23,6 +41,10 @@
       "currentPreparation": "Current Preparation",
       "availableLoadouts": "Available loadouts",
       "spellRank": "Spell Rank",
+      "cantrips": "Cantrips",
+      "currentlyPrepared": "Currently Prepared",
+      "includeCantrips": "Include Cantrips",
+      "includeCantripsHint": "When on, loadouts save and restore your prepared cantrips. When off, cantrips are left untouched.",
       "createdDate": "Created",
       "unknownSpell": "Unknown Spell",
       "loadWarning": {
@@ -41,6 +63,7 @@
     "loadoutButton": {
       "load": "Load to Actor",
       "new": "Create new Loadout",
+      "newShort": "New Loadout",
       "delete": "Delete",
       "rename": "Rename",
       "duplicate": "Duplicate",

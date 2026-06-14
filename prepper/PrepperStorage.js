@@ -1,5 +1,5 @@
 import { MODULE_ID, LEGACY_MODULE_ID } from "./constants.js";
-import { settings, error, popup } from "./utilities/Utilities.js";
+import { settings, error, popup, getSettings } from "./utilities/Utilities.js";
 
 /**
  * Class for handling spell loadout storage and management
@@ -211,8 +211,86 @@ export default class PrepperStorage {
    * @returns {Promise<boolean>} - Whether anything was cleared
    */
   static async clearAllSpellLoadouts(actor) {
+    // Write an empty object rather than unsetting the flag. An unset flag makes
+    // _getAllLoadouts fall back to any legacy PF2e Prepper data, so cleared
+    // loadouts would reappear. A present (truthy) empty object short-circuits
+    // that fallback, leaving a genuinely empty list.
     await actor.unsetFlag(MODULE_ID, settings.flagNames.loadouts);
+    await actor.setFlag(MODULE_ID, settings.flagNames.loadouts, {});
     return true;
+  }
+
+  /**
+   * Merge imported loadouts into an entry. Keyed by loadout id: an imported
+   * loadout whose id already exists is overwritten (so re-importing the same
+   * file is idempotent), others are added. Existing loadouts are never removed.
+   * Each merged loadout is re-homed to the target entry.
+   * @param {Actor} actor
+   * @param {string} spellcastingEntryId
+   * @param {Object} loadoutsMap - { [loadoutId]: loadout }
+   * @returns {Promise<number>} - How many loadouts were imported
+   */
+  static async importLoadouts(actor, spellcastingEntryId, loadoutsMap) {
+    const entries = Object.entries(loadoutsMap || {});
+    if (entries.length === 0) return 0;
+
+    const allLoadouts = this._deepClone(this._getAllLoadouts(actor));
+    const target = this._deepClone(allLoadouts[spellcastingEntryId] || {});
+
+    for (const [id, loadout] of entries) {
+      if (!loadout || typeof loadout !== "object") continue;
+      const merged = this._deepClone(loadout);
+      merged.id = id;
+      merged.spellcastingEntryId = spellcastingEntryId;
+      target[id] = merged;
+    }
+
+    allLoadouts[spellcastingEntryId] = target;
+    await actor.unsetFlag(MODULE_ID, settings.flagNames.loadouts);
+    await actor.setFlag(MODULE_ID, settings.flagNames.loadouts, allLoadouts);
+
+    return entries.length;
+  }
+
+  /**
+   * Import a known-spell list (spellbook) into an entry by creating the spell
+   * items. Spells already in the entry (matched by slug, else name) are skipped
+   * so re-importing is safe; each imported spell is re-homed to the target entry.
+   * @param {Actor} actor
+   * @param {string} spellcastingEntryId
+   * @param {Array<Object>} spellsData - exported spell item data
+   * @returns {Promise<{added: number, skipped: number}>}
+   */
+  static async importKnownSpells(actor, spellcastingEntryId, spellsData) {
+    if (!Array.isArray(spellsData) || spellsData.length === 0) return { added: 0, skipped: 0 };
+
+    const keyOf = (s) => s?.system?.slug || s?.name;
+    const existing = new Set(
+      (actor.itemTypes.spell || [])
+        .filter((s) => s.system?.location?.value === spellcastingEntryId)
+        .map((s) => keyOf(s))
+    );
+
+    const toCreate = [];
+    let skipped = 0;
+    for (const data of spellsData) {
+      if (!data || data.type !== "spell") { skipped++; continue; }
+      const key = keyOf(data);
+      if (key && existing.has(key)) { skipped++; continue; }
+
+      const clone = this._deepClone(data);
+      delete clone._id;
+      clone.system = clone.system || {};
+      clone.system.location = clone.system.location || {};
+      clone.system.location.value = spellcastingEntryId;
+      toCreate.push(clone);
+      if (key) existing.add(key);
+    }
+
+    if (toCreate.length > 0) {
+      await actor.createEmbeddedDocuments("Item", toCreate);
+    }
+    return { added: toCreate.length, skipped };
   }
 
   /**
@@ -352,7 +430,15 @@ export default class PrepperStorage {
     if (!spellcasting.prepareSpell) return false;
 
     try {
-      const levels = Array.from({ length: 10 }, (_, i) => i + 1);
+      // Only clear/replace cantrips (slot0) when this loadout actually stored
+      // them. Loadouts saved before cantrip support have no level-0 data, so we
+      // leave the current cantrips untouched rather than wiping them.
+      // Manage cantrips only when the setting is on AND this loadout actually
+      // stored cantrips (so the setting off, or older cantrip-free loadouts,
+      // leave the current cantrips untouched).
+      const manageCantrips = getSettings(settings.includeCantrips)
+        && (savedEntry.levels || []).some((l) => Number(l.level) === 0);
+      const levels = Array.from({ length: 11 }, (_, i) => i).slice(manageCantrips ? 0 : 1);
       const entrySlots = entry.system.slots || {};
 
       // Clear all currently prepared slots first, including levels not present in the saved loadout.
@@ -370,6 +456,7 @@ export default class PrepperStorage {
       // Apply saved spells after clearing.
       for (const levelObj of (savedEntry.levels || [])) {
         const level = Number(levelObj.level);
+        if (level === 0 && !manageCantrips) continue;
         const slotKey = `slot${level}`;
         const slots = entrySlots[slotKey];
         if (!slots) continue;

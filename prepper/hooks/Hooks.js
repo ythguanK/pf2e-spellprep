@@ -87,11 +87,21 @@ Hooks.once('init', () => {
     registerSettings(settings.debug);
     registerSettings(settings.quickLoadVisible);
     registerSettings(settings.unifiedSpellbook);
+    registerSettings(settings.sortJsonAlpha);
+    registerSettings(settings.includeCantrips);
 
     // Register Handlebars helper for date formatting
     Handlebars.registerHelper('formatDate', function(timestamp) {
         if (!timestamp) return '';
         return new Date(timestamp).toLocaleString();
+    });
+
+    // Rank heading label: "Cantrips" for rank 0, otherwise "Spell Rank N".
+    Handlebars.registerHelper('spellprepRankLabel', function(rank) {
+        const n = Number(rank) || 0;
+        return n === 0
+            ? game.i18n.localize('PREPPER.loadout.cantrips')
+            : `${game.i18n.localize('PREPPER.loadout.spellRank')} ${n}`;
     });
 });
 
