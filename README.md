@@ -13,6 +13,8 @@ Prepared casters (Wizard, Witch, Cleric, Druid, Magus, …) re-choose their spel
 - Supports both standard **prepared** casting and **flexible** casting.
 - Loadouts are stored **per spellcasting entry** (so multi-tradition characters and archetype dedications work).
 - Manage loadouts: create, duplicate, rename, set-to-current, delete, and clear-all.
+- Optionally includes your prepared **cantrips** in loadouts (toggle in the manager).
+- **Import and export** loadouts and your known-spell list: JSON (lossless backup and transfer), Markdown (a readable reference), or everything at once as a zip.
 - Optional **quick-load** (⚡) button on each prepared spellcasting entry.
 - Integrates with **PF2e Dailies**: pick a loadout to apply as part of your Daily Preparations.
 - Works with **PF2e Unified Spellbook**: the loadout button appears in its unified view too.
@@ -41,6 +43,17 @@ ln -s /path/to/this/repo "/path/to/FoundryVTT/Data/modules/pf2e-spellprep"
 2. Click the **scroll** (📜) button on a prepared spellcasting entry to open the manager.
 3. From **Current Preparation**, save the current spells as a new loadout.
 4. Later, select a saved loadout and **Load to Actor** to apply it.
+
+## Cantrips
+Loadouts can include your prepared cantrips. Use the **Include Cantrips** toggle in the manager's left rail (on by default) to decide; when off, saving and loading loadouts leaves your cantrips untouched. Loadouts saved without cantrips never disturb your current cantrips on load.
+
+## Import and export
+From the manager's left rail, **Export** offers:
+- **JSON: Loadouts** and **JSON: Known Spells**: lossless backups you can re-import (on the same character, or transferred to another). Importing loadouts merges them in; importing known spells adds any spells missing from the spellbook and skips those already present.
+- **Markdown: Loadouts** and **Markdown: Known Spells**: a readable reference (a table per spell rank, then each spell's full detail). Export only.
+- **Export All**: every available file bundled into a single `.zip`.
+
+**Import** reads a JSON file and detects automatically whether it holds loadouts or known spells. The client setting **Sort JSON Exports Alphabetically** (on by default) controls the export order.
 
 ## PF2e Dailies integration
 If you use the [PF2e Dailies](https://foundryvtt.com/packages/pf2e-dailies) module, SpellPrep can apply a loadout as part of your **Daily Preparations**, so swapping spells becomes one step of your normal rest.
