@@ -242,12 +242,15 @@ export default class PrepperApp extends HandlebarsApplicationMixin(ApplicationV2
                 };
 
                 for (const spellInfo of (levelObj.spells || [])) {
-                    if (!spellInfo.id) continue;
+                    // Spells may be stored by id, by name (portable/imported
+                    // loadouts), or both; show whichever name we can resolve.
+                    const spell = spellInfo.id ? this.actor.items.get(spellInfo.id) : null;
+                    const name = spell?.name || spellInfo.name;
+                    if (!name) continue;
 
-                    const spell = this.actor.items.get(spellInfo.id);
                     levelData.spells.push({
                         id: spellInfo.id,
-                        name: spell?.name || spellInfo.name || game.i18n.localize("PREPPER.loadout.unknownSpell"),
+                        name,
                     });
                 }
 

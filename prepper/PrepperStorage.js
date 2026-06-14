@@ -365,6 +365,33 @@ export default class PrepperStorage {
   }
 
   /**
+   * Resolve a stored loadout spell to an item on the actor. Prefers the stored
+   * id; falls back to matching by name within this entry's spells, so loadouts
+   * stay portable across worlds/characters (where ids differ), survive a spell
+   * being deleted and re-added, and can be authored by name alone.
+   * @param {Actor} actor
+   * @param {string} spellcastingEntryId
+   * @param {{id?: string, name?: string}} spellData
+   * @returns {Item|null}
+   */
+  static _resolveLoadoutSpell(actor, spellcastingEntryId, spellData) {
+    if (!spellData) return null;
+
+    const byId = spellData.id ? actor.items.get(spellData.id) : null;
+    if (byId?.type === "spell") return byId;
+
+    if (spellData.name) {
+      const wanted = String(spellData.name).trim().toLowerCase();
+      const byName = (actor.itemTypes.spell || []).find(s =>
+        s.system?.location?.value === spellcastingEntryId &&
+        s.name.trim().toLowerCase() === wanted
+      );
+      if (byName) return byName;
+    }
+    return null;
+  }
+
+  /**
    * Apply one saved spell loadout to one spellcasting entry.
    * @param {Actor} actor
    * @param {string} spellcastingEntryId
@@ -395,18 +422,12 @@ export default class PrepperStorage {
         const spellsToInclude = new Set();
         for (const levelObj of savedEntry.levels || []) {
           for (const spellData of (levelObj.spells || [])) {
-            if (!spellData?.id) {
-              addMissingSpell(spellData, "PREPPER.loadout.loadWarning.reasonBadSpell");
-              continue;
-            }
-
-            const spell = actor.items.get(spellData.id);
+            const spell = this._resolveLoadoutSpell(actor, spellcastingEntryId, spellData);
             if (!spell) {
               addMissingSpell(spellData, "PREPPER.loadout.loadWarning.reasonNotOnActor");
               continue;
             }
-
-            spellsToInclude.add(spellData.id);
+            spellsToInclude.add(spell.id);
           }
         }
 
@@ -447,9 +468,11 @@ export default class PrepperStorage {
         const slots = entrySlots[slotKey];
         if (!slots) continue;
 
+        // PF2e identifies the cantrip group by the id "cantrips", not rank 0.
+        const groupId = level === 0 ? "cantrips" : level;
         const prepared = slots.prepared || [];
         for (let slotIndex = prepared.length - 1; slotIndex >= 0; slotIndex--) {
-          await spellcasting.prepareSpell(null, level, slotIndex);
+          await spellcasting.prepareSpell(null, groupId, slotIndex);
         }
       }
 
@@ -461,31 +484,24 @@ export default class PrepperStorage {
         const slots = entrySlots[slotKey];
         if (!slots) continue;
 
+        // PF2e identifies the cantrip group by the id "cantrips", not rank 0.
+        const groupId = level === 0 ? "cantrips" : level;
         const savedSpellCount = levelObj.spells?.length || 0;
         for (let slotIndex = 0; slotIndex < savedSpellCount; slotIndex++) {
           const spellData = levelObj.spells[slotIndex];
-          if (!spellData?.id) {
-            addMissingSpell(spellData, "PREPPER.loadout.loadWarning.reasonBadSpell");
-            continue;
-          }
 
           if (slotIndex >= slots.max) {
             addMissingSpell(spellData, "PREPPER.loadout.loadWarning.reasonNoSlot");
             continue;
           }
 
-          const spell = actor.items.get(spellData.id);
+          const spell = this._resolveLoadoutSpell(actor, spellcastingEntryId, spellData);
           if (!spell) {
             addMissingSpell(spellData, "PREPPER.loadout.loadWarning.reasonNotOnActor");
             continue;
           }
 
-          if (spell.type !== "spell") {
-            addMissingSpell(spellData, "PREPPER.loadout.loadWarning.reasonBadSpell");
-            continue;
-          }
-
-          await spellcasting.prepareSpell(spell, level, slotIndex);
+          await spellcasting.prepareSpell(spell, groupId, slotIndex);
         }
       }
 
