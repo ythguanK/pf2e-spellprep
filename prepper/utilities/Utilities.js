@@ -27,6 +27,23 @@ const settings = {
         default: true
     },
 
+    sortJsonAlpha: {
+        id: "sortJsonAlphabetical",
+        name: "Sort JSON Exports Alphabetically",
+        hint: "When exporting to JSON, sort entries alphabetically by name. Turn off to keep the existing order.",
+        scope: "client",
+        default: true
+    },
+
+    includeCantrips: {
+        id: "includeCantrips",
+        name: "Include Cantrips in Loadouts",
+        hint: "When on, loadouts save and restore your prepared cantrips. Turn off to leave cantrips untouched when saving and loading.",
+        scope: "client",
+        config: false,
+        default: true
+    },
+
     flagNames: {
         loadouts: 'loadouts',
     }

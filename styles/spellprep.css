@@ -59,16 +59,27 @@
 /* Content - stored spell entry */
 .pf2e-spellprep .prepper-tab-content {
   flex-grow: 1;
+  min-height: 0;
   padding: 16px;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* The active tab fills the content area: its spell list scrolls while the
+   header (and, for loadouts, the action footer) stay put. */
+.pf2e-spellprep .prepper-tab-content > .tab {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* Loadout Info Section - listing of stored spells + name/description */
 .pf2e-spellprep .prepper-loadout-info {
   display: flex;
   justify-content: space-between;
+  flex: 0 0 auto;
 }
 
 .pf2e-spellprep .prepper-loadout-info h2 {
@@ -83,6 +94,7 @@
 }
 
 .pf2e-spellprep .prepper-loadout-description {
+  flex: 0 0 auto;
   padding-top: 10px;
   border-bottom: 1px solid var(--color-pf-primary);
   font: 0.9em var(--font-primary);
@@ -91,8 +103,10 @@
   margin-bottom: 16px;
 }
 
-/* Spell List Container */
+/* Spell List Container: the scrolling region, bounded so it stops at the footer */
 .pf2e-spellprep .prepper-loadout-container {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   padding: 12px;
 }
@@ -132,11 +146,15 @@
   color: var(--color-pf-alternate-darker);
 }
 
-/* Stored Loadout Action Buttons */
+/* Stored Loadout Action Buttons: pinned to the bottom of the panel so they stay
+   visible while the spell list scrolls. */
 .pf2e-spellprep .prepper-loadout-actions {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   gap: 5px;
+  flex: 0 0 auto;
+  border-top: 1px solid var(--color-pf-primary);
+  padding-top: 8px;
 }
 
 /* Targeting specific buttons to place them in the correct grid cells */
@@ -211,4 +229,34 @@
 
 .dialog .pf2e-spellprep-dialog textarea {
   min-height: 80px;
+}
+
+/* Import / export rail actions (grouped at the bottom of the tab rail, with a
+   separator line above to set them apart from the loadout list). */
+.pf2e-spellprep .prepper-tabs .prepper-rail-actions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-pf-primary);
+}
+
+.pf2e-spellprep .prepper-tabs .prepper-rail-actions .prepper-clear-all-btn {
+  margin-top: 0;
+}
+
+.pf2e-spellprep .prepper-io-btn {
+  white-space: nowrap;
+}
+
+/* Currently Prepared tab button: distinct colour, matching the action buttons. */
+.pf2e-spellprep .prepper-tabs .prepper-current-tab {
+  background: var(--color-pf-primary);
+  color: var(--color-pf-inventory-header-text);
+}
+
+/* New Loadout button in the rail, just below the loadout list. */
+.pf2e-spellprep .prepper-tabs .prepper-new-loadout-rail-btn {
+  margin-top: 4px;
 }

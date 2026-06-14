@@ -1,17 +1,32 @@
 <div class="pf2e-spellprep">
   <div class="prepper-tabs">
     <h1>{{localize "PREPPER.loadout.availableLoadouts"}}</h1>
-    <button type="button" data-action="changeTab" data-tab="current" class="{{#if (eq activeTab "current")}}active{{/if}}">
-      {{localize "PREPPER.loadout.currentPreparation"}}
+    <button type="button" data-action="changeTab" data-tab="current" class="prepper-current-tab {{#if (eq activeTab "current")}}active{{/if}}">
+      {{localize "PREPPER.loadout.currentlyPrepared"}}
     </button>
     {{#each spellLoadouts as |loadout|}}
       <button type="button" data-action="changeTab" data-tab="{{loadout.id}}" class="{{#if (eq ../activeTab loadout.id)}}active{{/if}}">
         {{loadout.name}}
       </button>
     {{/each}}
-    <button class="prepper-clear-all-btn" data-action="clearAll">
-      <i class="fas fa-trash"></i> {{localize "PREPPER.loadoutButton.clearAll"}}
+    <button class="prepper-new-loadout-rail-btn" data-action="new" type="button">
+      <i class="fas fa-plus"></i> {{localize "PREPPER.loadoutButton.newShort"}}
     </button>
+    <div class="prepper-rail-actions">
+      <button class="prepper-cantrip-toggle {{#if includeCantrips}}active{{/if}}" data-action="toggleCantrips" type="button"
+              data-tooltip="{{localize 'PREPPER.loadout.includeCantripsHint'}}">
+        <i class="fas {{#if includeCantrips}}fa-check-square{{else}}fa-square{{/if}}"></i> {{localize "PREPPER.loadout.includeCantrips"}}
+      </button>
+      <button class="prepper-io-btn" data-action="export" type="button">
+        <i class="fas fa-file-export"></i> {{localize "PREPPER.io.export"}}
+      </button>
+      <button class="prepper-io-btn" data-action="import" type="button">
+        <i class="fas fa-file-import"></i> {{localize "PREPPER.io.import"}}
+      </button>
+      <button class="prepper-clear-all-btn" data-action="clearAll" type="button">
+        <i class="fas fa-trash"></i> {{localize "PREPPER.loadoutButton.clearAll"}}
+      </button>
+    </div>
   </div>
 
   <div class="prepper-tab-content">
@@ -26,7 +41,6 @@
             <i class="fas fa-plus"></i> {{localize "PREPPER.loadoutButton.new"}}
           </button>
         </div>
-      </div>
 
       <div class="prepper-loadout-container">
         {{#if spellcastingEntry.levels.length}}
@@ -34,7 +48,7 @@
             <h4>{{spellcastingEntry.name}}</h4>
             {{#each spellcastingEntry.levels as |level|}}
               <div class="prepper-spell-level">
-                <h5>{{localize "PREPPER.loadout.spellRank"}} {{level.level}}</h5>
+                <h5>{{spellprepRankLabel level.level}}</h5>
                 <ul class="prepper-loadout">
                   {{#each level.spells as |spell|}}
                     <li class="prepper-spell-item">
@@ -48,6 +62,7 @@
         {{else}}
           <p class="prepper-no-spells-message">{{localize "PREPPER.loadout.noSpellsAvailable"}}</p>
         {{/if}}
+      </div>
       </div>
     {{/if}}
 
@@ -78,7 +93,7 @@
                 <h4>{{loadout.displayEntry.name}}</h4>
                 {{#each loadout.displayEntry.levels as |level|}}
                   <div class="prepper-spell-level">
-                    <h5>{{localize "PREPPER.loadout.spellRank"}} {{level.level}}</h5>
+                    <h5>{{spellprepRankLabel level.level}}</h5>
                     <ul class="prepper-loadout">
                       {{#each level.spells as |spell|}}
                         <li class="prepper-spell-item">

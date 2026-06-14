@@ -1,6 +1,7 @@
 import { MODULE_ID, MODULE_TITLE } from "./constants.js";
 import { API } from "./prepper.js";
-import { debug, info, popup } from "./utilities/Utilities.js";
+import { debug, info, popup, settings, getSettings } from "./utilities/Utilities.js";
+import * as IO from "./PrepperIO.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api
 const { renderTemplate } = foundry.applications.handlebars;
@@ -28,6 +29,13 @@ export default class PrepperApp extends HandlebarsApplicationMixin(ApplicationV2
             reset: PrepperApp._onReset,
 
             clearAll: PrepperApp._onClearAllFlags,
+
+            // Import / export
+            "export": PrepperApp._onExport,
+            "import": PrepperApp._onImport,
+
+            // In-window toggle
+            toggleCantrips: PrepperApp._onToggleCantrips,
         },
 
         position: {
@@ -49,7 +57,7 @@ export default class PrepperApp extends HandlebarsApplicationMixin(ApplicationV2
     static PARTS = {
         page: {
             template: `modules/${MODULE_ID}/templates/prepper.hbs`,
-            scrollable: [''],
+            scrollable: ['.prepper-loadout-container'],
         }
     }
 
@@ -86,7 +94,8 @@ export default class PrepperApp extends HandlebarsApplicationMixin(ApplicationV2
             spellcastingEntry: currentEntry,
             spellLoadouts: sortedLoadouts,
             hasLoadouts: sortedLoadouts.length > 0,
-            activeTab: this.activeTab || 'current'
+            activeTab: this.activeTab || 'current',
+            includeCantrips: getSettings(settings.includeCantrips)
         };
     }
     
@@ -123,8 +132,10 @@ export default class PrepperApp extends HandlebarsApplicationMixin(ApplicationV2
         const slots = entry.system.slots || {};
         debug(`Slots for entry ${entry.name}:`, slots);
         
-        // For each spell level, get the prepared spells
-        for (let level = 1; level <= 10; level++) {
+        // For each spell level, get the prepared spells. Level 0 = cantrips,
+        // captured only when the "Include Cantrips in Loadouts" setting is on.
+        const startLevel = getSettings(settings.includeCantrips) ? 0 : 1;
+        for (let level = startLevel; level <= 10; level++) {
             const slotKey = `slot${level}`;
             if (!slots[slotKey]) {
                 debug(`No slot data for level ${level} in entry ${entry.name}.`);
@@ -438,6 +449,93 @@ export default class PrepperApp extends HandlebarsApplicationMixin(ApplicationV2
             this.render(true);
             return;
         }
+    }
+
+    /**
+     * Export interface. Offers JSON (lossless) and Markdown (reference) for both
+     * the loadouts and the entry's known spells, plus an "Export All" that writes
+     * every available file at once.
+     * @param {Event} event
+     * @private
+     */
+    static async _onExport(event) {
+        event.preventDefault();
+        const actor = this.actor;
+        const entryId = this.spellcastingEntryId;
+
+        const jsonLoadouts = () => IO.downloadTextFile(
+            IO.loadoutsFilename(actor, entryId, "json"), IO.buildLoadoutsJSON(actor, entryId), "application/json");
+        const jsonKnown = () => IO.downloadTextFile(
+            IO.knownSpellsFilename(actor, entryId, "json"), IO.buildKnownSpellsJSON(actor, entryId), "application/json");
+        const mdLoadouts = (warn) => {
+            const md = IO.buildLoadoutsMarkdown(actor, entryId);
+            if (!md) { if (warn) popup(game.i18n.localize('PREPPER.io.noLoadouts'), "warn"); return; }
+            IO.downloadTextFile(IO.loadoutsFilename(actor, entryId, "md"), md, "text/markdown");
+        };
+        const mdKnown = (warn) => {
+            const md = IO.buildKnownSpellsMarkdown(actor, entryId);
+            if (!md) { if (warn) popup(game.i18n.localize('PREPPER.io.noKnown'), "warn"); return; }
+            IO.downloadTextFile(IO.knownSpellsFilename(actor, entryId, "md"), md, "text/markdown");
+        };
+
+        await DialogV2.wait({
+            window: { title: game.i18n.localize('PREPPER.io.exportTitle') },
+            content: `<p>${game.i18n.localize('PREPPER.io.exportPrompt')}</p>`,
+            buttons: [
+                { action: "json-loadouts", icon: "fas fa-file-code", label: game.i18n.localize('PREPPER.io.exportJsonLoadouts'), default: true, callback: jsonLoadouts },
+                { action: "json-known", icon: "fas fa-file-code", label: game.i18n.localize('PREPPER.io.exportJsonKnown'), callback: jsonKnown },
+                { action: "md-loadouts", icon: "fas fa-file-lines", label: game.i18n.localize('PREPPER.io.exportMdLoadouts'), callback: () => mdLoadouts(true) },
+                { action: "md-known", icon: "fas fa-book", label: game.i18n.localize('PREPPER.io.exportMdKnown'), callback: () => mdKnown(true) },
+                { action: "all", icon: "fas fa-file-zipper", label: game.i18n.localize('PREPPER.io.exportAll'), callback: () => IO.downloadTextFile(IO.exportAllFilename(actor, entryId), IO.buildExportAllZip(actor, entryId), "application/zip") },
+                { action: "cancel", icon: "fas fa-times", label: game.i18n.localize('PREPPER.popup.cancel') }
+            ]
+        });
+    }
+
+    /**
+     * Import from a JSON file into this entry. Detects whether the file holds
+     * loadouts (merged, never clears) or a known-spell list (spells created,
+     * existing ones skipped).
+     * @param {Event} event
+     * @private
+     */
+    static async _onImport(event) {
+        event.preventDefault();
+        try {
+            const text = await IO.pickTextFile(".json,application/json");
+            if (text == null) return; // cancelled
+
+            const parsed = IO.parseExportFile(text);
+
+            if (parsed.type === "loadouts") {
+                const count = await API.PrepperStorage.importLoadouts(this.actor, this.spellcastingEntryId, parsed.loadouts);
+                if (count > 0) {
+                    popup(game.i18n.format('PREPPER.io.importSuccess', { count }));
+                    this.activeTab = 'current';
+                    this.render(true);
+                } else {
+                    popup(game.i18n.localize('PREPPER.io.importEmpty'), "warn");
+                }
+            } else if (parsed.type === "known-spells") {
+                const { added, skipped } = await API.PrepperStorage.importKnownSpells(this.actor, this.spellcastingEntryId, parsed.spells);
+                popup(game.i18n.format('PREPPER.io.importSpellsSuccess', { added, skipped }));
+                this.render(true);
+            }
+        } catch (e) {
+            popup(e.message || game.i18n.localize('PREPPER.io.errorInvalid'), "warn");
+        }
+    }
+
+    /**
+     * Toggle the "include cantrips in loadouts" client setting from the window.
+     * @param {Event} event
+     * @private
+     */
+    static async _onToggleCantrips(event) {
+        event.preventDefault();
+        const next = !getSettings(settings.includeCantrips);
+        await game.settings.set(MODULE_ID, settings.includeCantrips.id, next);
+        this.render();
     }
 
     /**
