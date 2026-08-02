@@ -1,6 +1,7 @@
 {
   "PREPPER": {
     "ManageSpellLoadouts": "Manage Prepared Spell Loadouts with PF2e SpellPrep",
+    "SheetButton": "SpellPrep",
     "QuickLoad": "Quick load a Loadout from PF2e SpellPrep",
     "io": {
       "export": "Export",

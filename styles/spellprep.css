@@ -202,6 +202,30 @@
   color: #666;
 }
 
+/* Known Spells tab button row: holds the SpellPrep button and, when Unified
+   Spellbook is active, its adopted view toggle. Margins mirror the toggle's
+   own (4px 8px 6px) so the row sits exactly where the toggle used to. */
+.pf2e-spellprep-button-row {
+  display: flex;
+  gap: 6px;
+  margin: 4px 8px 6px;
+}
+
+/* Both buttons share the row equally. justify-content also centres the
+   adopted toggle's label (its inline style only sets display and align). */
+.pf2e-spellprep-button-row > button {
+  flex: 1 1 0;
+  justify-content: center;
+}
+
+.pf2e-spellprep-button-row > button.pf2e-spellprep-sheet-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-size: 0.85em;
+}
+
 /* Character Sheet Anchor */
 .pf2e-spellprep-spell-loadouts-manager i,.pf2e-spellprep-quick-load i {
   color: var(--color-pf-tertiary-dark);

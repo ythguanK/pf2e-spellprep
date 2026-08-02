@@ -79,12 +79,98 @@ function injectLoadoutButtons(app, html) {
     }
 }
 
+/**
+ * Inject a prominent SpellPrep button above the spell list on the Known Spells
+ * tab, so the module is discoverable without hunting for the small per-entry
+ * scroll icon.
+ *
+ * PF2e Unified Spellbook places its full-width "Unified View" toggle in the
+ * same spot, but only *after* this hook has run (its handler awaits a template
+ * render). So we insert a flex row now and, when the toggle appears, adopt it
+ * into the row so the two share the width half-and-half. Without Unified
+ * Spellbook the SpellPrep button simply takes the full width on its own.
+ * @param {ApplicationV2} app
+ * @param {HTMLElement|JQuery} html
+ */
+function injectKnownSpellsButton(app, html) {
+    try {
+        if (!getSettings(settings.sheetButton)) return;
+        if (app.actor?.type !== 'character') return;
+
+        const preparedEntries = (app.actor.itemTypes.spellcastingEntry || [])
+            .filter(entry => entry.system.prepared?.value === 'prepared');
+        if (preparedEntries.length === 0) return;
+
+        const root = toElement(html);
+        if (!root) return;
+
+        const knownSpellsTab = root.querySelector('.tab.known-spells');
+        const spellList = knownSpellsTab?.querySelector('ol.spellcastingEntry-list');
+        if (!spellList) return;
+
+        // Idempotency guard: the render hook can fire more than once per
+        // render, and removing an existing row would destroy an adopted
+        // Unified View toggle along with its click handler.
+        if (knownSpellsTab.querySelector('.pf2e-spellprep-button-row')) return;
+
+        const row = document.createElement('div');
+        row.className = 'pf2e-spellprep-button-row';
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'blue pf2e-spellprep-sheet-button';
+        button.dataset.tooltip = game.i18n.localize('PREPPER.ManageSpellLoadouts');
+        button.innerHTML = `<i class="fas fa-scroll"></i><span>${game.i18n.localize('PREPPER.SheetButton')}</span>`;
+        button.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            // The manager works on one spellcasting entry; open the first
+            // prepared one. Multi-entry casters still have the per-entry
+            // scroll buttons for direct access to the others.
+            API.PrepperApp(app.actor, { spellcastingEntryId: preparedEntries[0].id });
+        });
+        row.appendChild(button);
+        spellList.before(row);
+
+        // Pull Unified Spellbook's view toggle (an unclassed button.blue
+        // sibling of the spell list) into our row and clear the inline width
+        // and margin it arrives with, so the flex row can size both buttons
+        // to half the width each.
+        const adoptToggle = () => {
+            const toggle = [...spellList.parentElement.children].find(el =>
+                el.matches('button.blue:not([data-action])') && el !== button && !row.contains(el)
+            );
+            if (!toggle) return false;
+            toggle.style.width = '';
+            toggle.style.margin = '';
+            row.prepend(toggle);
+            return true;
+        };
+
+        // Tear down any observer left over from a previous render.
+        app._spellprepToggleObserver?.disconnect();
+        app._spellprepToggleObserver = null;
+
+        if (game.modules.get('pf2e-unified-spellbook')?.active && !adoptToggle()) {
+            // Toggle not there yet: watch the list's parent for it. disconnect()
+            // also discards the mutation the adoption itself queues.
+            const observer = new MutationObserver(() => {
+                if (adoptToggle()) observer.disconnect();
+            });
+            observer.observe(spellList.parentElement, { childList: true });
+            app._spellprepToggleObserver = observer;
+        }
+    } catch (e) {
+        error('Error adding SpellPrep button to Known Spells tab', e);
+    }
+}
+
 // Initialize the module.
 Hooks.once('init', () => {
     info('Initializing module');
 
     // Register module settings
     registerSettings(settings.debug);
+    registerSettings(settings.sheetButton);
     registerSettings(settings.quickLoadVisible);
     registerSettings(settings.unifiedSpellbook);
     registerSettings(settings.sortJsonAlpha);
@@ -219,6 +305,7 @@ function setupUnifiedViewInjection(app, html) {
 // twice — so we register only the specific hook here.)
 Hooks.on('renderCharacterSheetPF2e', (app, html) => {
     injectLoadoutButtons(app, html);
+    injectKnownSpellsButton(app, html);
     setupUnifiedViewInjection(app, html);
 });
 
@@ -226,4 +313,6 @@ Hooks.on('renderCharacterSheetPF2e', (app, html) => {
 Hooks.on('closeCharacterSheetPF2e', (app) => {
     app._spellprepObserver?.disconnect();
     app._spellprepObserver = null;
+    app._spellprepToggleObserver?.disconnect();
+    app._spellprepToggleObserver = null;
 });
