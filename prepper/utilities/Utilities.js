@@ -12,6 +12,14 @@ const settings = {
         requiresReload: true
     },
 
+    sheetButton: {
+        id: "showSheetButton",
+        name: "Show SpellPrep Button on Known Spells Tab",
+        hint: "Show a prominent SpellPrep button above the spell list (next to Unified Spellbook's view toggle, when that module is active).",
+        scope: "client",
+        default: true
+    },
+
     quickLoadVisible: {
         id: "showQuickLoadButton",
         name: "Show Quick Load Button",

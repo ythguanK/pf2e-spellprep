@@ -15,6 +15,7 @@ Prepared casters (Wizard, Witch, Cleric, Druid, Magus, …) re-choose their spel
 - Manage loadouts: create, duplicate, rename, set-to-current, delete, and clear-all.
 - Optionally includes your prepared **cantrips** in loadouts (toggle in the manager).
 - **Import and export** loadouts and your known-spell list: JSON (lossless backup and transfer), Markdown (a readable reference), or everything at once as a zip.
+- A prominent **SpellPrep** button above the spell list on the Known Spells tab; when PF2e Unified Spellbook is active it shares that row with the Unified View toggle.
 - Optional **quick-load** (⚡) button on each prepared spellcasting entry.
 - Integrates with **PF2e Dailies**: pick a loadout to apply as part of your Daily Preparations.
 - Works with **PF2e Unified Spellbook**: the loadout button appears in its unified view too.
@@ -40,7 +41,7 @@ ln -s /path/to/this/repo "/path/to/FoundryVTT/Data/modules/pf2e-spellprep"
 
 ## Usage
 1. Open a prepared spellcaster's character sheet → **Spellcasting** tab.
-2. Click the **scroll** (📜) button on a prepared spellcasting entry to open the manager.
+2. Click the **SpellPrep** button above the spell list, or the **scroll** (📜) button on a prepared spellcasting entry, to open the manager. (The SpellPrep button opens the first prepared entry; multi-entry casters use the per-entry scroll buttons for the others. It can be hidden with the client setting **Show SpellPrep Button on Known Spells Tab**.)
 3. From **Current Preparation**, save the current spells as a new loadout.
 4. Later, select a saved loadout and **Load to Actor** to apply it.
 
@@ -72,7 +73,9 @@ If you use the [PF2e Dailies](https://foundryvtt.com/packages/pf2e-dailies) modu
 
 ## PF2e Unified Spellbook "integration"
 SpellPrep works alongside [PF2e Unified Spellbook](https://foundryvtt.com/packages/pf2e-unified-spellbook), but it's a hack as Unified Spellbook doesn't have a module API. 
-In its **Unified View**, the scroll (📜) button is added to each prepared spellcasting entry's sub-header (e.g. "Arcane Prepared Spells"). This is controlled by theSpellPrep setting **Unified Spellbook: Show Loadout Button** setting (on by default). If a future Unified Spellbook update changes its layout, it should fail safely and silently (the button simply stops appearing and nothing else is affected). Worst case you can turn it off.
+In its **Unified View**, the scroll (📜) button is added to each prepared spellcasting entry's sub-header (e.g. "Arcane Prepared Spells"). This is controlled by the SpellPrep setting **Unified Spellbook: Show Loadout Button** (on by default). If a future Unified Spellbook update changes its layout, it should fail safely and silently (the button simply stops appearing and nothing else is affected). Worst case you can turn it off.
+
+In addition, the **SpellPrep** button on the Known Spells tab adopts Unified Spellbook's full-width view toggle into a shared row, so the two sit side by side at half width each. This is equally a hack (the toggle arrives asynchronously and is watched for with a MutationObserver) and fails just as safely: if Unified Spellbook changes, the toggle simply keeps its own full-width row and SpellPrep keeps its own.
 
 ## Notes
 - Loadouts are stored in actor *flags* under this module.
