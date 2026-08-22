@@ -13,3 +13,6 @@ _study-prepper/
 
 # Claude project context (local only: contains local paths + identity notes)
 CLAUDE.md
+
+# Anonymity check patterns (local only: the patterns are the secret)
+.anonymity-patterns

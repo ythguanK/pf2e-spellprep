@@ -7,9 +7,9 @@ For version `X.Y.Z`:
 1. **Bump `module.json`** — update **both**:
    - `"version": "X.Y.Z"`
    - `"download": ".../releases/download/vX.Y.Z/pf2e-spellprep.zip"`  ← must match the tag, or installs of this version break.
-2. **Anonymity check** — confirm no real name leaked anywhere:
+2. **Anonymity check** — confirm nothing personally identifying leaked into tracked files. The patterns live in the gitignored, local-only `.anonymity-patterns` (one per line, matched case-insensitively); keeping them out of the repo is the point, so never inline them here.
    ```bash
-   git grep -ni -f .anonymity-patterns -- . ':!*.md' || echo "clean"
+   if [ ! -f .anonymity-patterns ]; then echo "MISSING .anonymity-patterns: do not release"; elif git grep -nif .anonymity-patterns; then echo "LEAK: fix before releasing"; else echo "clean"; fi
    ```
 3. **Commit & push** the version bump (and any changes/docs for this release).
 4. **Build the zip** from the committed state (flat layout, tracked files only — excludes `_study-prepper/`, `.git`, etc.):
