@@ -1,5 +1,5 @@
 import { MODULE_ID, MODULE_TITLE } from "../constants.js";
-export { debug, error, info, popup, settings, getSettings, registerSettings };
+export { debug, error, info, popup, settings, getSettings, registerSettings, isCantrip };
 
 const settings = {
     debug: { id: "debugMode", name: "Enable Debugging", hint: "Print debug to console log" },
@@ -110,4 +110,17 @@ function info(message) {
  */
 function error(msg, error) {
     console.error(`${MODULE_TITLE}: ERROR | ${msg}`, error);
+}
+
+/**
+ * Whether a PF2e spell item is a cantrip. PF2e does not model cantrips as
+ * rank 0: a cantrip's `system.level.value` is its base level (usually 1) and
+ * cantrip-ness is the "cantrip" trait, surfaced by the system as `isCantrip`.
+ * Upstream PF2e Prepper tests `level.value === 0`, which never matches.
+ * @param {Item} spell
+ * @returns {boolean}
+ */
+function isCantrip(spell) {
+    if (typeof spell?.isCantrip === "boolean") return spell.isCantrip;
+    return Array.isArray(spell?.system?.traits?.value) && spell.system.traits.value.includes("cantrip");
 }

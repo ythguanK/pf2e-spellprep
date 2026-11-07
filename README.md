@@ -46,7 +46,7 @@ ln -s /path/to/this/repo "/path/to/FoundryVTT/Data/modules/pf2e-spellprep"
 4. Later, select a saved loadout and **Load to Actor** to apply it.
 
 ## Cantrips
-Loadouts can include your prepared cantrips. Use the **Include Cantrips** toggle in the manager's left rail (on by default) to decide; when off, saving and loading loadouts leaves your cantrips untouched. Loadouts saved without cantrips never disturb your current cantrips on load.
+Loadouts can include your prepared cantrips. Use the **Include Cantrips** toggle in the manager's left rail (on by default) to decide; when off, saving and loading loadouts leaves your cantrips untouched. Loadouts saved without cantrips never disturb your current cantrips on load. This applies to flexible casters too: their cantrips are prepared in slots rather than marked as signature spells, so SpellPrep reads and restores them from the cantrip slots.
 
 ## Import and export
 From the manager's left rail, **Export** offers:

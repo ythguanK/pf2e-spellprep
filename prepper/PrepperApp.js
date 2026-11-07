@@ -1,6 +1,6 @@
 import { MODULE_ID, MODULE_TITLE } from "./constants.js";
 import { API } from "./prepper.js";
-import { debug, info, popup, settings, getSettings } from "./utilities/Utilities.js";
+import { debug, info, popup, settings, getSettings, isCantrip } from "./utilities/Utilities.js";
 import * as IO from "./PrepperIO.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api
@@ -183,17 +183,36 @@ export default class PrepperApp extends HandlebarsApplicationMixin(ApplicationV2
     }
     
     _getCurrentSpellsDisplayFlexible(entryData, entry) {
-        // Get all spells associated with this entry via "location"
-        const spells = this.actor.items.filter(spell => 
-            spell.type === 'spell' && spell.system.location?.value === entry.id && spell.system.location?.signature === true
-        );
-        
-        debug(`Found ${spells.length} spells for entry ${entry.name}.`);
-        
-        // Group spells by level
         const spellsByLevel = {};
+
+        // Flexible casters do not use signatures for cantrips: those stay
+        // prepared in slot0 exactly like a standard prepared caster's, so we
+        // read them from the slots (ported from upstream PF2e Prepper 2.0.0).
+        // Captured only when the "Include Cantrips in Loadouts" setting is on.
+        if (getSettings(settings.includeCantrips)) {
+            const cantripSlots = entry.system.slots?.slot0?.prepared || [];
+            for (const preparedCantrip of cantripSlots) {
+                if (!preparedCantrip.id) continue;
+                const cantrip = this.actor.items.get(preparedCantrip.id);
+                if (!cantrip) continue;
+                spellsByLevel[0] = spellsByLevel[0] || [];
+                spellsByLevel[0].push({ id: cantrip.id, name: cantrip.name });
+            }
+        }
+
+        // Get all ranked spells associated with this entry via "location"
+        const spells = this.actor.items.filter(spell =>
+            spell.type === 'spell'
+            && !isCantrip(spell)
+            && spell.system.location?.value === entry.id
+            && spell.system.location?.signature === true
+        );
+
+        debug(`Found ${spells.length} signature spells for entry ${entry.name}.`);
+
+        // Group spells by level
         for (const spell of spells) {
-            const level = spell.system.level.value || 0;
+            const level = spell.system.level.value;
             if (!spellsByLevel[level]) {
                 spellsByLevel[level] = [];
             }

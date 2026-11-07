@@ -1,5 +1,5 @@
 import { MODULE_ID, LEGACY_MODULE_ID } from "./constants.js";
-import { settings, error, popup, getSettings } from "./utilities/Utilities.js";
+import { settings, error, popup, getSettings, isCantrip } from "./utilities/Utilities.js";
 
 /**
  * Class for handling spell loadout storage and management
@@ -417,11 +417,26 @@ export default class PrepperStorage {
       missingSpells.add(`- ${name} (${id}): ${reason}`);
     };
 
+    // Manage cantrips (slot0) only when the setting is on AND this loadout
+    // actually stored cantrips, so the setting being off, or older cantrip-free
+    // loadouts, leave the current cantrips untouched rather than wiping them.
+    // (Upstream PF2e Prepper 2.0.0 instead always clears slot0 and flags such
+    // loadouts as "outdated"; we keep the no-wipe behaviour deliberately.)
+    const savedByLevel = new Map(
+      (savedEntry.levels || []).map(levelObj => [Number(levelObj.level), levelObj.spells || []])
+    );
+    const manageCantrips = getSettings(settings.includeCantrips) && savedByLevel.has(0);
+    const entrySlots = entry.system.slots || {};
+
     if (isFlexible) {
       try {
+        // Flexible casters mark ranked spells as signatures, but their cantrips
+        // stay prepared in slot0 like a standard prepared caster's (ported from
+        // upstream PF2e Prepper 2.0.0).
         const spellsToInclude = new Set();
-        for (const levelObj of savedEntry.levels || []) {
-          for (const spellData of (levelObj.spells || [])) {
+        for (const [level, savedSpells] of savedByLevel) {
+          if (level === 0) continue;
+          for (const spellData of savedSpells) {
             const spell = this._resolveLoadoutSpell(actor, spellcastingEntryId, spellData);
             if (!spell) {
               addMissingSpell(spellData, "PREPPER.loadout.loadWarning.reasonNotOnActor");
@@ -433,11 +448,20 @@ export default class PrepperStorage {
 
         if (spellcasting.size > 0) {
           for (const spell of spellcasting.contents) {
+            if (isCantrip(spell)) continue;
             const shouldPrepare = spellsToInclude.has(spell.id);
             await spell.update({
               "system.location.signature": shouldPrepare
             });
           }
+        }
+
+        if (manageCantrips && entrySlots.slot0) {
+          if (!spellcasting.prepareSpell) {
+            error("Failed to prepare cantrips: spellcasting entry does not support prepareSpell.");
+            return false;
+          }
+          await this._prepareSlotLevel(spellcasting, actor, spellcastingEntryId, entrySlots.slot0, "cantrips", savedByLevel.get(0), addMissingSpell);
         }
 
         this._showMissingSpellsWarning(missingSpells);
@@ -451,58 +475,17 @@ export default class PrepperStorage {
     if (!spellcasting.prepareSpell) return false;
 
     try {
-      // Only clear/replace cantrips (slot0) when this loadout actually stored
-      // them. Loadouts saved before cantrip support have no level-0 data, so we
-      // leave the current cantrips untouched rather than wiping them.
-      // Manage cantrips only when the setting is on AND this loadout actually
-      // stored cantrips (so the setting off, or older cantrip-free loadouts,
-      // leave the current cantrips untouched).
-      const manageCantrips = getSettings(settings.includeCantrips)
-        && (savedEntry.levels || []).some((l) => Number(l.level) === 0);
-      const levels = Array.from({ length: 11 }, (_, i) => i).slice(manageCantrips ? 0 : 1);
-      const entrySlots = entry.system.slots || {};
-
-      // Clear all currently prepared slots first, including levels not present in the saved loadout.
-      for (const level of levels) {
-        const slotKey = `slot${level}`;
-        const slots = entrySlots[slotKey];
+      // PF2e stores prepared cantrips in slot0, followed by spell ranks 1 to 10.
+      // Each level is cleared and then refilled from the loadout (or left empty
+      // if the loadout has nothing for that level), so a load fully replaces
+      // the current preparation.
+      for (let level = manageCantrips ? 0 : 1; level <= 10; level++) {
+        const slots = entrySlots[`slot${level}`];
         if (!slots) continue;
 
         // PF2e identifies the cantrip group by the id "cantrips", not rank 0.
         const groupId = level === 0 ? "cantrips" : level;
-        const prepared = slots.prepared || [];
-        for (let slotIndex = prepared.length - 1; slotIndex >= 0; slotIndex--) {
-          await spellcasting.prepareSpell(null, groupId, slotIndex);
-        }
-      }
-
-      // Apply saved spells after clearing.
-      for (const levelObj of (savedEntry.levels || [])) {
-        const level = Number(levelObj.level);
-        if (level === 0 && !manageCantrips) continue;
-        const slotKey = `slot${level}`;
-        const slots = entrySlots[slotKey];
-        if (!slots) continue;
-
-        // PF2e identifies the cantrip group by the id "cantrips", not rank 0.
-        const groupId = level === 0 ? "cantrips" : level;
-        const savedSpellCount = levelObj.spells?.length || 0;
-        for (let slotIndex = 0; slotIndex < savedSpellCount; slotIndex++) {
-          const spellData = levelObj.spells[slotIndex];
-
-          if (slotIndex >= slots.max) {
-            addMissingSpell(spellData, "PREPPER.loadout.loadWarning.reasonNoSlot");
-            continue;
-          }
-
-          const spell = this._resolveLoadoutSpell(actor, spellcastingEntryId, spellData);
-          if (!spell) {
-            addMissingSpell(spellData, "PREPPER.loadout.loadWarning.reasonNotOnActor");
-            continue;
-          }
-
-          await spellcasting.prepareSpell(spell, groupId, slotIndex);
-        }
+        await this._prepareSlotLevel(spellcasting, actor, spellcastingEntryId, slots, groupId, savedByLevel.get(level) || [], addMissingSpell);
       }
 
       this._showMissingSpellsWarning(missingSpells);
@@ -510,6 +493,43 @@ export default class PrepperStorage {
     } catch (e) {
       error(`Failed to prepare spell via API: ${e.message}`);
       return false;
+    }
+  }
+
+  /**
+   * Clear everything currently prepared in one spell-slot level, then fill it
+   * with the wanted spells in order (up to the level's slot capacity). Spells
+   * are resolved by stored id, then by name within the entry.
+   * @param {Object} spellcasting - The actor's spellcasting collection for this entry.
+   * @param {Actor} actor
+   * @param {string} spellcastingEntryId
+   * @param {Object} slots - The `system.slots.slotN` object for this level.
+   * @param {string|number} groupId - "cantrips" for slot0, otherwise the numeric spell rank.
+   * @param {Array<Object>} wantedSpells - Saved spell data ({id, name}) to prepare into this level, in slot order.
+   * @param {Function} addMissingSpell - Callback to report a spell that could not be prepared.
+   * @private
+   */
+  static async _prepareSlotLevel(spellcasting, actor, spellcastingEntryId, slots, groupId, wantedSpells, addMissingSpell) {
+    const prepared = slots.prepared || [];
+    for (let slotIndex = prepared.length - 1; slotIndex >= 0; slotIndex--) {
+      await spellcasting.prepareSpell(null, groupId, slotIndex);
+    }
+
+    for (let slotIndex = 0; slotIndex < wantedSpells.length; slotIndex++) {
+      const spellData = wantedSpells[slotIndex];
+
+      if (slotIndex >= slots.max) {
+        addMissingSpell(spellData, "PREPPER.loadout.loadWarning.reasonNoSlot");
+        continue;
+      }
+
+      const spell = this._resolveLoadoutSpell(actor, spellcastingEntryId, spellData);
+      if (!spell) {
+        addMissingSpell(spellData, "PREPPER.loadout.loadWarning.reasonNotOnActor");
+        continue;
+      }
+
+      await spellcasting.prepareSpell(spell, groupId, slotIndex);
     }
   }
 }

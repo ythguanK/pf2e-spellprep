@@ -1,3 +1,4 @@
 # Keep repo housekeeping files out of release zips built with git archive
 RELEASING.md export-ignore
 .gitattributes export-ignore
+UPSTREAM.md export-ignore
