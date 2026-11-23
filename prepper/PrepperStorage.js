@@ -64,6 +64,38 @@ export default class PrepperStorage {
   }
 
   /**
+   * Choose the prepared spellcasting entry to open when the caller has no
+   * particular entry in mind (the SpellPrep button on the Known Spells tab).
+   *
+   * Sheet order alone is not a safe guide: an Import Data over the actor
+   * rewrites the order of its embedded items, and a character can carry small
+   * prepared entries (archetype or coven spells) ahead of the main one. Opening
+   * one of those shows an empty manager, which looks as though the loadouts
+   * have been lost. So prefer the entry with the most saved loadouts, then the
+   * one with the most prepared slots, and only then sheet order.
+   * @param {Actor} actor
+   * @returns {string|undefined} - The id of the entry to open, or undefined if the actor has no prepared entry
+   */
+  static getDefaultSpellcastingEntryId(actor) {
+    const entries = (actor?.itemTypes?.spellcastingEntry || [])
+      .filter(entry => entry?.system?.prepared?.value === "prepared");
+    if (entries.length === 0) return undefined;
+
+    const allLoadouts = this._getAllLoadouts(actor);
+    const slotCount = entry => Object.values(entry.system.slots || {})
+      .reduce((sum, slot) => sum + (Number(slot?.max) || 0), 0);
+
+    return entries
+      .map((entry, index) => ({
+        id: entry.id,
+        index,
+        loadouts: Object.keys(allLoadouts?.[entry.id] || {}).length,
+        slots: slotCount(entry)
+      }))
+      .sort((a, b) => (b.loadouts - a.loadouts) || (b.slots - a.slots) || (a.index - b.index))[0].id;
+  }
+
+  /**
    * Get all entry-grouped spell loadouts for an actor.
    *
    * Reads our own flags first. For drop-in compatibility with the module we

@@ -4,9 +4,7 @@ Save, name, and instantly swap **prepared spell loadouts** for Pathfinder 2e pre
 
 Prepared casters (Wizard, Witch, Cleric, Druid, Magus, …) re-choose their spells during Daily Preparations. Doing that by hand can take 20–30 minutes of real time and stalls the whole table. PF2e SpellPrep lets a player set up named loadouts once: **Combat**, **Social**, **Exploration**, *whatever-you-like*; and swap between them in a couple of clicks.
 
-> **Target:** Foundry VTT **v14**, Pathfinder Second Edition (`pf2e`) system **8.x**.
-> **Code is entirely AI-generated via Claude 4.8** Ignore references to "Fable 5.0" in the code, Claude has disassociative identity disorder as at 13th June 2026, probably due to Anthropic having to block 5.0 on the 12th because Anthropic won't bend the knee to Kegseth.
->Testing <u>was</u> performed by an actual human GM on both local and Forge-hosted copies of Foundry, but has been limited to classes present in my campaign.
+> **Target:** Foundry VTT **v14**, Pathfinder Second Edition (`pf2e`) system **8.x**. **Code is entirely AI-generated via Claude 4.8** Ignore references to "Fable 5.0" in the code, Claude has disassociative identity disorder as at 13th June 2026, probably due to Anthropic having to block 5.0 on the 12th because Anthropic won't bend the knee to Kegseth. Testing <u>was</u> performed by an actual human GM on both local and Forge-hosted copies of Foundry, but has been limited to classes present in my campaign.
 
 ## What it does
 - Saves a spellcasting entry's current preparation as a named **Loadout** (with an optional description).
@@ -30,8 +28,7 @@ https://github.com/ythguanK/pf2e-spellprep/releases/latest/download/module.json
 Click **Install**, then enable **PF2e SpellPrep** in your world under *Manage Modules*. The Pathfinder Second Edition (`pf2e`) system is required.
 
 ### For local development (build-free)
-This module has **no build step**, so Foundry loads the source files directly, which allows very fast iteration on a locally installed version.
-Instead of installing the released version, symlink the repository into your Foundry data directory; edit a file and reload the world to see changes:
+This module has **no build step**, so Foundry loads the source files directly, which allows very fast iteration on a locally installed version. Instead of installing the released version, symlink the repository into your Foundry data directory; edit a file and reload the world to see changes:
 
 ```bash
 ln -s /path/to/this/repo "/path/to/FoundryVTT/Data/modules/pf2e-spellprep"
@@ -41,7 +38,7 @@ ln -s /path/to/this/repo "/path/to/FoundryVTT/Data/modules/pf2e-spellprep"
 
 ## Usage
 1. Open a prepared spellcaster's character sheet → **Spellcasting** tab.
-2. Click the **SpellPrep** button above the spell list, or the **scroll** (📜) button on a prepared spellcasting entry, to open the manager. (The SpellPrep button opens the first prepared entry; multi-entry casters use the per-entry scroll buttons for the others. It can be hidden with the client setting **Show SpellPrep Button on Known Spells Tab**.)
+2. Click the **SpellPrep** button above the spell list, or the **scroll** (📜) button on a prepared spellcasting entry, to open the manager. (On a character with more than one prepared entry, the SpellPrep button opens the entry with the most saved loadouts, or failing that the one with the most spell slots; the per-entry scroll buttons open the others directly. It can be hidden with the client setting **Show SpellPrep Button on Known Spells Tab**.)
 3. From **Current Preparation**, save the current spells as a new loadout.
 4. Later, select a saved loadout and **Load to Actor** to apply it.
 
@@ -72,8 +69,7 @@ If you use the [PF2e Dailies](https://foundryvtt.com/packages/pf2e-dailies) modu
 > Requires the PF2e Dailies module to be installed and active, and at least one saved loadout on the entry. (Verified with PF2e Dailies 4.18.1.)
 
 ## PF2e Unified Spellbook "integration"
-SpellPrep works alongside [PF2e Unified Spellbook](https://foundryvtt.com/packages/pf2e-unified-spellbook), but it's a hack as Unified Spellbook doesn't have a module API. 
-In its **Unified View**, the scroll (📜) button is added to each prepared spellcasting entry's sub-header (e.g. "Arcane Prepared Spells"). This is controlled by the SpellPrep setting **Unified Spellbook: Show Loadout Button** (on by default). If a future Unified Spellbook update changes its layout, it should fail safely and silently (the button simply stops appearing and nothing else is affected). Worst case you can turn it off.
+SpellPrep works alongside [PF2e Unified Spellbook](https://foundryvtt.com/packages/pf2e-unified-spellbook), but it's a hack as Unified Spellbook doesn't have a module API. In its **Unified View**, the scroll (📜) button is added to each prepared spellcasting entry's sub-header (e.g. "Arcane Prepared Spells"). This is controlled by the SpellPrep setting **Unified Spellbook: Show Loadout Button** (on by default). If a future Unified Spellbook update changes its layout, it should fail safely and silently (the button simply stops appearing and nothing else is affected). Worst case you can turn it off.
 
 In addition, the **SpellPrep** button on the Known Spells tab adopts Unified Spellbook's full-width view toggle into a shared row, so the two sit side by side at half width each. This is equally a hack (the toggle arrives asynchronously and is watched for with a MutationObserver) and fails just as safely: if Unified Spellbook changes, the toggle simply keeps its own full-width row and SpellPrep keeps its own.
 

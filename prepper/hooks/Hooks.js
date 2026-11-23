@@ -123,10 +123,14 @@ function injectKnownSpellsButton(app, html) {
         button.innerHTML = `<i class="fas fa-scroll"></i><span>${game.i18n.localize('PREPPER.SheetButton')}</span>`;
         button.addEventListener('click', (ev) => {
             ev.preventDefault();
-            // The manager works on one spellcasting entry; open the first
-            // prepared one. Multi-entry casters still have the per-entry
-            // scroll buttons for direct access to the others.
-            API.PrepperApp(app.actor, { spellcastingEntryId: preparedEntries[0].id });
+            // The manager works on one spellcasting entry. Choose it at click
+            // time rather than at render time, so the choice follows loadouts
+            // saved since the sheet was drawn (see
+            // PrepperStorage.getDefaultSpellcastingEntryId for the ranking).
+            // Multi-entry casters still have the per-entry scroll buttons for
+            // direct access to the others.
+            const entryId = API.PrepperStorage.getDefaultSpellcastingEntryId(app.actor) ?? preparedEntries[0].id;
+            API.PrepperApp(app.actor, { spellcastingEntryId: entryId });
         });
         row.appendChild(button);
         spellList.before(row);
