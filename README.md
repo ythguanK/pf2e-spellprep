@@ -10,6 +10,7 @@ Prepared casters (Wizard, Witch, Cleric, Druid, Magus, …) re-choose their spel
 - Saves a spellcasting entry's current preparation as a named **Loadout** (with an optional description).
 - Supports both standard **prepared** casting and **flexible** casting.
 - Loadouts are stored **per spellcasting entry** (so multi-tradition characters and archetype dedications work).
+- Characters with more than one prepared entry get a **Spellcasting entry** picker in the manager, showing how many loadouts each entry holds, to switch between them without going back to the sheet.
 - Manage loadouts: create, duplicate, rename, set-to-current, delete, and clear-all.
 - Optionally includes your prepared **cantrips** in loadouts (toggle in the manager).
 - **Import and export** loadouts and your known-spell list: JSON (lossless backup and transfer), Markdown (a readable reference), or everything at once as a zip.
@@ -38,7 +39,7 @@ ln -s /path/to/this/repo "/path/to/FoundryVTT/Data/modules/pf2e-spellprep"
 
 ## Usage
 1. Open a prepared spellcaster's character sheet → **Spellcasting** tab.
-2. Click the **SpellPrep** button above the spell list, or the **scroll** (📜) button on a prepared spellcasting entry, to open the manager. (On a character with more than one prepared entry, the SpellPrep button opens the entry with the most saved loadouts, or failing that the one with the most spell slots; the per-entry scroll buttons open the others directly. It can be hidden with the client setting **Show SpellPrep Button on Known Spells Tab**.)
+2. Click the **SpellPrep** button above the spell list, or the **scroll** (📜) button on a prepared spellcasting entry, to open the manager. (On a character with more than one prepared entry, the SpellPrep button opens the entry with the most saved loadouts, or failing that the one with the most spell slots; the per-entry scroll buttons open the others directly, and the **Spellcasting entry** picker at the top of the manager switches between them. The button can be hidden with the client setting **Show SpellPrep Button on Known Spells Tab**.)
 3. From **Current Preparation**, save the current spells as a new loadout.
 4. Later, select a saved loadout and **Load to Actor** to apply it.
 
@@ -75,6 +76,7 @@ In addition, the **SpellPrep** button on the Known Spells tab adopts Unified Spe
 
 ## Notes
 - Loadouts are stored in actor *flags* under this module.
+- On Foundry v14 every change to the saved loadouts is written in a single database update, so an interrupted save cannot lose them.
 - Loading a loadout replaces the current prepared slots (prepared casters) or signature spells (flexible casters) for that entry.
 - If a saved spell is no longer on the actor (or can't be placed), a warning lists the affected spells and why.
 - This is unlikely to be moved to the Bazaar as I'd have to purchase an anonymous Foundry licence.

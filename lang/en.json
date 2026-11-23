@@ -2,6 +2,10 @@
   "PREPPER": {
     "ManageSpellLoadouts": "Manage Prepared Spell Loadouts with PF2e SpellPrep",
     "SheetButton": "SpellPrep",
+    "entryPicker": {
+      "label": "Spellcasting entry",
+      "hint": "This character has more than one prepared spellcasting entry. Each keeps its own loadouts; the number shows how many are saved."
+    },
     "QuickLoad": "Quick load a Loadout from PF2e SpellPrep",
     "io": {
       "export": "Export",

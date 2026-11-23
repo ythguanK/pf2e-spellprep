@@ -1,5 +1,15 @@
 <div class="pf2e-spellprep">
   <div class="prepper-tabs">
+    {{#if showEntryPicker}}
+      <div class="prepper-entry-picker" data-tooltip="{{localize 'PREPPER.entryPicker.hint'}}">
+        <label for="prepper-entry-picker-select">{{localize "PREPPER.entryPicker.label"}}</label>
+        <select id="prepper-entry-picker-select" name="spellcastingEntry">
+          {{#each entries as |entry|}}
+            <option value="{{entry.id}}" {{#if entry.selected}}selected{{/if}}>{{entry.name}} ({{entry.loadoutCount}})</option>
+          {{/each}}
+        </select>
+      </div>
+    {{/if}}
     <h1>{{localize "PREPPER.loadout.availableLoadouts"}}</h1>
     <button type="button" data-action="changeTab" data-tab="current" class="prepper-current-tab {{#if (eq activeTab "current")}}active{{/if}}">
       {{localize "PREPPER.loadout.currentlyPrepared"}}

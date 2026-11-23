@@ -73,10 +73,21 @@ export default class PrepperApp extends HandlebarsApplicationMixin(ApplicationV2
     };
 
     async _preparePartContext() {
+        const storage = API.PrepperStorage;
+
+        // The window manages one spellcasting entry at a time. If it was opened
+        // without an entry, or its entry has since been deleted or is no longer
+        // prepared, fall back to the actor's default entry rather than showing
+        // an empty window.
+        const preparedEntries = storage.getPreparedSpellcastingEntries(this.actor);
+        if (preparedEntries.length > 0 && !preparedEntries.some(entry => entry.id === this.spellcastingEntryId)) {
+            this.spellcastingEntryId = storage.getDefaultSpellcastingEntryId(this.actor);
+            this.activeTab = 'current';
+        }
+
         const currentEntry = this._getCurrentSpellsDisplay(this.spellcastingEntryId);
 
         // Get all spell loadouts for this spellcasting entry
-        const storage = API.PrepperStorage;
         const spellLoadouts = storage.getSpellLoadouts(this.actor, this.spellcastingEntryId);
         
         // Sort loadouts alphabetically
@@ -94,11 +105,42 @@ export default class PrepperApp extends HandlebarsApplicationMixin(ApplicationV2
             spellcastingEntry: currentEntry,
             spellLoadouts: sortedLoadouts,
             hasLoadouts: sortedLoadouts.length > 0,
+            // Entry picker: only offered when there is a choice to make.
+            entries: preparedEntries.map(entry => ({ ...entry, selected: entry.id === this.spellcastingEntryId })),
+            showEntryPicker: preparedEntries.length > 1,
             activeTab: this.activeTab || 'current',
             includeCantrips: getSettings(settings.includeCantrips)
         };
     }
     
+    /**
+     * Wire the entry picker. ApplicationV2's `actions` only handle clicks, and
+     * a <select> reports its choice with a `change` event, so it is bound here.
+     * Every render replaces the window's HTML, so the listener always lands on
+     * a fresh element and never stacks up.
+     * @param {Object} context
+     * @param {Object} options
+     * @protected
+     */
+    async _onRender(context, options) {
+        await super._onRender(context, options);
+        this.element.querySelector('.prepper-entry-picker select')
+            ?.addEventListener('change', (event) => this._onChangeEntry(event.currentTarget.value));
+    }
+
+    /**
+     * Switch the window to another of the actor's prepared spellcasting entries.
+     * @param {string} entryId
+     * @private
+     */
+    _onChangeEntry(entryId) {
+        if (!entryId || entryId === this.spellcastingEntryId) return;
+        this.spellcastingEntryId = entryId;
+        // Loadout tabs belong to the entry just left; start on its current preparation.
+        this.activeTab = 'current';
+        this.render();
+    }
+
     /**
     * Get the current spells for display
     * @returns {Array} Array of spellcasting entries with their spells

@@ -48,7 +48,7 @@ export default class PrepperStorage {
   /**
    * Get all prepared spellcasting entries for an actor.
    * @param {Actor} actor - The actor to get prepared spellcasting entries for
-   * @returns {Array<{id: string, name: string, flexible: boolean, hasLoadouts: boolean}>}
+   * @returns {Array<{id: string, name: string, flexible: boolean, hasLoadouts: boolean, loadoutCount: number}>}
    */
   static getPreparedSpellcastingEntries(actor) {
     const entries = actor?.itemTypes?.spellcastingEntry || [];
@@ -59,7 +59,8 @@ export default class PrepperStorage {
         id: entry.id,
         name: entry.name,
         flexible: entry.system.prepared?.flexible === true,
-        hasLoadouts: Object.keys(allLoadouts?.[entry.id] || {}).length > 0
+        hasLoadouts: Object.keys(allLoadouts?.[entry.id] || {}).length > 0,
+        loadoutCount: Object.keys(allLoadouts?.[entry.id] || {}).length
       }));
   }
 
@@ -124,6 +125,38 @@ export default class PrepperStorage {
   }
 
   /**
+   * Write the complete entry-grouped loadouts object to the actor's flags,
+   * replacing whatever is stored there.
+   *
+   * A plain setFlag merges into the existing object, so a loadout removed from
+   * the new object would survive in the stored one. Upstream PF2e Prepper works
+   * round that by unsetting the flag and then setting it again: two separate
+   * database updates, and if the second one fails (a dropped connection, a
+   * permission error) every loadout on the actor is gone. On Foundry v14 a
+   * ForcedReplacement operator swaps the whole object in ONE update, so the
+   * write either lands completely or leaves the stored loadouts untouched.
+   * Foundry v13 has no update operators, so it keeps the two-step write.
+   * @param {Actor} actor
+   * @param {Object} allLoadouts - { [spellcastingEntryId]: { [loadoutId]: loadout } }
+   * @returns {Promise<Actor|undefined>}
+   * @private
+   */
+  static async _writeAllLoadouts(actor, allLoadouts) {
+    const key = settings.flagNames.loadouts;
+    // Never hand Foundry a live reference into actor.flags (loadSpellLoadout
+    // passes one): the update must carry its own copy of the data.
+    const data = this._deepClone(allLoadouts || {});
+
+    const ForcedReplacement = globalThis.foundry?.data?.operators?.ForcedReplacement;
+    if (ForcedReplacement) {
+      return actor.update({ flags: { [MODULE_ID]: { [key]: ForcedReplacement.create(data) } } });
+    }
+
+    await actor.unsetFlag(MODULE_ID, key);
+    return actor.setFlag(MODULE_ID, key, data);
+  }
+
+  /**
    * Get a specific loadout by ID
    * @param {Actor} actor - The actor to get the loadout from
    * @param {string} spellcastingEntryId - The spellcasting entry to load from
@@ -163,8 +196,7 @@ export default class PrepperStorage {
     allLoadout[spellcastingEntryId] = allLoadout[spellcastingEntryId] || {};
     allLoadout[spellcastingEntryId][loadoutId] = loadout;
 
-    await actor.unsetFlag(MODULE_ID, settings.flagNames.loadouts);
-    await actor.setFlag(MODULE_ID, settings.flagNames.loadouts, allLoadout);
+    await this._writeAllLoadouts(actor, allLoadout);
 
     return loadoutId;
   }
@@ -184,8 +216,7 @@ export default class PrepperStorage {
     if (!success) return false;
 
     const loadouts = this._getAllLoadouts(actor);
-    await actor.unsetFlag(MODULE_ID, settings.flagNames.loadouts);
-    await actor.setFlag(MODULE_ID, settings.flagNames.loadouts, loadouts);
+    await this._writeAllLoadouts(actor, loadouts);
     
     return true;
   }
@@ -229,8 +260,7 @@ export default class PrepperStorage {
     }
     
     // Update the actor's flags
-    await actor.unsetFlag(MODULE_ID, settings.flagNames.loadouts);
-    await actor.setFlag(MODULE_ID, settings.flagNames.loadouts, allLoadouts);
+    await this._writeAllLoadouts(actor, allLoadouts);
     
     // Ensure the flag update is fully processed before returning
     // This gives Foundry's event system a chance to fully synchronize the data
@@ -247,8 +277,7 @@ export default class PrepperStorage {
     // _getAllLoadouts fall back to any legacy PF2e Prepper data, so cleared
     // loadouts would reappear. A present (truthy) empty object short-circuits
     // that fallback, leaving a genuinely empty list.
-    await actor.unsetFlag(MODULE_ID, settings.flagNames.loadouts);
-    await actor.setFlag(MODULE_ID, settings.flagNames.loadouts, {});
+    await this._writeAllLoadouts(actor, {});
     return true;
   }
 
@@ -278,8 +307,7 @@ export default class PrepperStorage {
     }
 
     allLoadouts[spellcastingEntryId] = target;
-    await actor.unsetFlag(MODULE_ID, settings.flagNames.loadouts);
-    await actor.setFlag(MODULE_ID, settings.flagNames.loadouts, allLoadouts);
+    await this._writeAllLoadouts(actor, allLoadouts);
 
     return entries.length;
   }
@@ -351,8 +379,7 @@ export default class PrepperStorage {
     
     // Update the actor's flags
     allLoadouts[spellcastingEntryId] = updatedLoadouts;
-    await actor.unsetFlag(MODULE_ID, settings.flagNames.loadouts);
-    await actor.setFlag(MODULE_ID, settings.flagNames.loadouts, allLoadouts);
+    await this._writeAllLoadouts(actor, allLoadouts);
     
     return true;
   }
@@ -390,8 +417,7 @@ export default class PrepperStorage {
     updatedLoadouts[newLoadoutId] = newLoadout;
     allLoadouts[spellcastingEntryId] = updatedLoadouts;
     
-    await actor.unsetFlag(MODULE_ID, settings.flagNames.loadouts);
-    await actor.setFlag(MODULE_ID, settings.flagNames.loadouts, allLoadouts);
+    await this._writeAllLoadouts(actor, allLoadouts);
     
     return newLoadoutId;
   }
